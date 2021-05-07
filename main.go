@@ -44,19 +44,6 @@ func main() {
 	}
 	defer f.Close()
 
-	// Count the lines in the file, needed for progressbar.
-
-	s := bufio.NewScanner(f)
-
-	lines := 0
-	for s.Scan() {
-		lines++
-	}
-	_, err = f.Seek(0, 0)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	// Launch N workers
 
 	passwords := make(chan string)
@@ -76,10 +63,11 @@ func main() {
 	}
 
 	// Create a new scanner, and progressbar and start crunching lines
-
-	s = bufio.NewScanner(f)
+	s := bufio.NewScanner(f)
+	lines := countLines(f)
 	bar := pb.StartNew(lines)
 	bar.SetTemplate(pb.Full)
+
 	for s.Scan() {
 		select {
 		case password := <-resultChan:
@@ -112,4 +100,24 @@ func printResultsAndExit(user, password string) {
 		fmt.Printf("Password for %s found: %q\n", user, password)
 		os.Exit(0)
 	}
+}
+
+func countLines(f *os.File) int {
+	old, err := f.Seek(0, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s := bufio.NewScanner(f)
+
+	lines := 0
+	for s.Scan() {
+		lines++
+	}
+
+	if _, err := f.Seek(old, 0); err != nil {
+		log.Fatal(err)
+	}
+
+	return lines
 }
