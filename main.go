@@ -33,7 +33,7 @@ func tryPass(user, pass string) bool {
 
 func main() {
 	wordlist := flag.String("w", "passwords.txt", "wordlist file")
-	workers := flag.Int("n", 32, "how many workers to spawn")
+	workers := flag.Int("n", 64, "how many workers to spawn")
 	user := flag.String("u", "root", "user whos password to bruteforce")
 
 	flag.Parse()
